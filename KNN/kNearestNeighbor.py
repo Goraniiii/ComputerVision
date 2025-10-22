@@ -1,73 +1,65 @@
 import numpy as np
+from sklearn.metrics import pairwise_distances
+
 
 class KNearestNeighbor:
     def __init__(self):
         self.X_train = None
         self.y_train = None
+        self.distance = None
+        self.metric = None
+        self.sorted_indices = None
 
     def train(self, X, y):
-        """in KNN, train is just saving the data"""
+        """in KNN, train is just saving the train data"""
         self.X_train = X
         self.y_train = y
 
-    def predict(self, X_test, k = 3, distance_metric = 'l2'):
+    def compute_distance(self, X, metric='euclidean'):
+        self.distance = pairwise_distances(X, self.X_train, metric=metric)
+
+        self.sorted_indices = np.argsort(self.distance, axis=1)
+
+        # print(f"DONE: computing distance for {metric} metric")
+
+
+    def predict(self, k = 3):
         """
         Compute label prediction
-        X_test : (M, D) test dta
         k
-        distance_metric : l1 or l2
-
         return (M,)
         """
 
-        if distance_metric == 'l1':
-            distances = self.compute_l1_distance(X_test)
-        elif distance_metric == 'l2':
-            distances = self.compute_l2_distance(X_test)
-        else:
-            raise NotImplementedError
+        if self.distance is None:
+            raise Exception('Need to train first')
+        if self.sorted_indices is None:
+            raise Exception('Need to train first')
 
-        M = X_test.shape[0]
-        y_pred = np.zeros(M, dtype=self.y_train.dtype)
+        nearest_idx = self.sorted_indices[:, :k]
+        neighbor_labels = self.y_train[nearest_idx]
 
-        for i in range(M):
-            k_closest_indices = np.argsort(distances[i, :])[:k]
-
-            k_nearest_labels = self.y_train[k_closest_indices]
-
-            counts = np.bincount(k_nearest_labels)
-            y_pred[i] = np.argmax(counts)
-
+        y_pred = np.array([np.bincount(row).argmax() for row in neighbor_labels])
         return y_pred
 
 
-    def compute_l1_distance(self, X_test):
-        """
-        L1: Manhattan distance
-        return (M, N) matrix
-        M: number of test data
-        N: number of training data
-        """
-        M = X_test.shape[0]
-        N = self.X_train.shape[0]
-        distances = np.zeros((M, N))
-
-        for i in range(M):
-            distances[i, :] = np.sum(np.abs(self.X_train[i] - X_test[i]), axis=1)
-
-        return distances
-
-    def compute_l2_distance(self, X_test):
-        """
-        L2: Manhattan distance
-        return (M, N) matrix
-        M: number of test data
-        N: number of training data
-        """
-        X_test_sq = np.sum(X_test**2, axis=1, keepdims=True)
-        X_train_sq = np.sum(self.X_train**2, axis=1, keepdims=True)
-        dot_product = X_test.dot(X_test_sq)
-
-        distances_sq = X_test_sq - 2 * dot_product + X_train_sq
-
-        return np.maximum(0, distances_sq)
+    # def compute_l1_distance(self, X_test):
+    #     """
+    #     L1: Manhattan distance
+    #     return (M, N) matrix
+    #     M: number of test data
+    #     N: number of training data
+    #     """
+    #     distances = np.sum(np.abs(X_test[:, np.newaxis, :] - self.X_train[np.newaxis, :, :]), axis=2)
+    #     return distances
+    #
+    #
+    # def compute_l2_distance(self, X_test):
+    #     """
+    #     L2: Manhattan distance
+    #     return (M, N) matrix
+    #     M: number of test data
+    #     N: number of training data
+    #     """
+    #
+    #     distances = np.sqrt(np.sum((X_test[:, np.newaxis, :] - self.X_train[np.newaxis, :, :]) ** 2, axis=2))
+    #     return distances
