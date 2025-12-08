@@ -1,11 +1,11 @@
-# ReNet-5 Classifier for POC Dataset
+# LeNet-5 Classifier for POC Dataset
 
 ## Project Overview
-This project implements and evaluates a ReNet-5–based classifier on a medical image dataset.
+This project implements and evaluates a LeNet-5–based classifier on a medical image dataset.
 
-The goal is to benchmark the original ReNet-5 architecture against a set of modern deep learning methods and investigate how well classical CNNs perform on medical imaging tasks.
+The goal is to benchmark the original LeNet-5 architecture against a set of modern deep learning methods and investigate how well classical CNNs perform on medical imaging tasks.
 
-**Model presentation slide**: [introcv_lenet_5_presentation.pdf](https://github.com/Goraniiii/ComputerVision/blob/main/ReNet5/introcv_lenet_5_presentation.pdf)
+**Model presentation slide**: [introcv_lenet_5_presentation.pdf](https://github.com/Goraniiii/ComputerVision/blob/main/LeNet5/introcv_lenet_5_presentation.pdf)
 
 ---
 ## Dataset
@@ -20,20 +20,20 @@ All images are RGB with resolution 224×224.
 
 ## Experiments
 
-1. **Original ReNet-5**  
+1. **Original LeNet-5**  
    - input: 32*32 grayscale(1 channel)
    - Apply the architecture and method of the paper as it is.
    - Activation: tanh
    - Out: RBF
    - Loss: MSE
 
-2. **ReNet-5 + Modern methods**  
+2. **LeNet-5 + Modern methods**  
    - input: 32*32 grayscale(1 channel)
    - Apply the original architecture but with modern methods.
    - Activation: ReLU
    - criterion: Cross Entropy
 
-3. **Extended ReNet-5 for High-resolution RGB Images**  
+3. **Extended LeNet-5 for High-resolution RGB Images**  
    - input: 224*224 rgb(3 channel)
    - Architecture modified to accept 3-channel images
    - Activation: ReLU
@@ -47,7 +47,7 @@ All images are RGB with resolution 224×224.
   - Main notebook for experiments and visualization.  
 
 - **model.py**  
-  - ReNet-5 architecture implementation using pytorch.  
+  - LeNet-5 architecture implementation using pytorch.  
 
 - **util.py**  
   - Utility functions for training, preprocessing, and other functions.
