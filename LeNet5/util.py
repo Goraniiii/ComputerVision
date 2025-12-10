@@ -5,6 +5,8 @@ import cv2
 
 import matplotlib.pyplot as plt
 
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+
 
 def train_rbf(model, device, loader, criterion, optimizer, epoch):
     model.train()
@@ -70,9 +72,10 @@ def train(model, device, loader, criterion, optimizer, epoch):
 def evaluate_rbf(model, device, loader, criterion):
     model.eval()
 
-    correct = 0
-    total = 0
-    test_loss = 0.0
+    running_loss = 0.0
+
+    all_preds = []
+    all_labels = []
 
     with torch.no_grad():
         for images, labels in loader:
@@ -83,23 +86,35 @@ def evaluate_rbf(model, device, loader, criterion):
             labels_onehot = F.one_hot(labels, num_classes=4).float().to(device)
             loss = criterion(outputs, labels_onehot)
 
-            test_loss += loss.item()
+            running_loss += loss.item()
 
-            _, predicted = torch.max(outputs, dim=1)
-            correct += (predicted == labels).sum().item()
-            total += labels.size(0)
+            predicted = torch.argmax(outputs, dim=1)
 
-    acc = correct / total
-    print(f"Test Loss: {test_loss/len(loader):.4f}, Test Acc: {acc:.4f}")
-    return test_loss/len(loader), acc
+            all_preds.extend(predicted.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+
+    acc = accuracy_score(all_labels, all_preds)
+    precision = precision_score(all_labels, all_preds, average='macro', zero_division=0)
+    recall = recall_score(all_labels, all_preds, average='macro', zero_division=0)
+    f1 = f1_score(all_labels, all_preds, average='macro', zero_division=0)
+
+    avg_loss = running_loss / len(loader)
+
+    print(
+        f"Test Loss: {avg_loss:.4f}, Acc: {acc:.4f}, "
+        f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}"
+    )
+
+    return avg_loss, acc, precision, recall, f1
 
 
 def evaluate(model, device, loader, criterion):
     model.eval()
 
-    correct = 0
-    total = 0
-    test_loss = 0.0
+    running_loss = 0.0
+
+    all_preds = []
+    all_labels = []
 
     with torch.no_grad():
         for images, labels in loader:
@@ -108,16 +123,27 @@ def evaluate(model, device, loader, criterion):
 
             outputs = model(images)
             loss = criterion(outputs, labels)
-            test_loss += loss.item()
+            running_loss += loss.item()
 
-            _, predicted = torch.max(outputs, dim=1)
-            correct += (predicted == labels).sum().item()
-            total += labels.size(0)
+            predicted = torch.argmax(outputs, dim=1)
 
-    acc = correct / total
-    print(f"Test Loss: {test_loss/len(loader):.4f}, Test Acc: {acc:.4f}")
+            all_preds.extend(predicted.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
 
-    return test_loss/len(loader), acc
+    acc = accuracy_score(all_labels, all_preds)
+    precision = precision_score(all_labels, all_preds, average='macro', zero_division=0)
+    recall = recall_score(all_labels, all_preds, average='macro', zero_division=0)
+    f1 = f1_score(all_labels, all_preds, average='macro', zero_division=0)
+
+    avg_loss = running_loss / len(loader)
+
+    print(
+        f"Test Loss: {avg_loss:.4f}, Acc: {acc:.4f}, "
+        f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}"
+    )
+
+    return avg_loss, acc, precision, recall, f1
+
 
 def show_samples(dataset, samples_per_class=5):
     class_images = {i: [] for i in range(4)}
@@ -158,13 +184,13 @@ class ToBinary:
         return
 
     def __call__(self, image):
-        # image: PIL Image → numpy array 변환
+        # image: PIL Image → numpy array
         image = np.array(image)
 
-        # 1) RGB → Grayscale
+        # Grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
-        # 2) OTSU threshold
+        # OTSU threshold
         _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
         return thresh  # numpy array (H,W)
@@ -174,10 +200,10 @@ class Resize:
         self.size = size
 
     def __call__(self, image):
-        # image: PIL Image → numpy array 변환
+        # image: PIL Image → numpy array
         image = np.array(image)
 
-        # 3) Resize
+        # Resize
         resized = cv2.resize(image, self.size, interpolation=cv2.INTER_AREA)
 
         return resized  # numpy array (H,W)
