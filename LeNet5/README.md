@@ -43,7 +43,7 @@ All images are RGB with resolution 224×224.
 
 ## Code Organization
 
-- **practice.ipynb**  
+- **[practice.ipynb](https://github.com/Goraniiii/ComputerVision/blob/main/LeNet5/practice.ipynb)**  
   - Main notebook for experiments and visualization.  
 
 - **model.py**  
