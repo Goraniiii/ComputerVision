@@ -34,6 +34,8 @@ def train_rbf(model, device, loader, criterion, optimizer, epoch):
     acc = correct / total
     print(f"Epoch {epoch} - Loss: {running_loss/len(loader):.4f}, Train Acc: {acc:.4f}")
 
+    return running_loss/len(loader), acc
+
 def train(model, device, loader, criterion, optimizer, epoch):
     model.train()
     running_loss = 0.0
@@ -62,6 +64,8 @@ def train(model, device, loader, criterion, optimizer, epoch):
     acc = correct / total
     print(f"Epoch {epoch} - Loss: {running_loss/len(loader):.4f}, Train Acc: {acc:.4f}")
 
+    return running_loss/len(loader), acc
+
 
 def evaluate_rbf(model, device, loader, criterion):
     model.eval()
@@ -87,7 +91,7 @@ def evaluate_rbf(model, device, loader, criterion):
 
     acc = correct / total
     print(f"Test Loss: {test_loss/len(loader):.4f}, Test Acc: {acc:.4f}")
-    return acc
+    return test_loss/len(loader), acc
 
 
 def evaluate(model, device, loader, criterion):
@@ -112,7 +116,8 @@ def evaluate(model, device, loader, criterion):
 
     acc = correct / total
     print(f"Test Loss: {test_loss/len(loader):.4f}, Test Acc: {acc:.4f}")
-    return acc
+
+    return test_loss/len(loader), acc
 
 def show_samples(dataset, samples_per_class=5):
     class_images = {i: [] for i in range(4)}
